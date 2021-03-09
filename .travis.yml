@@ -13,7 +13,7 @@ notifications:
 env:
   global:
     - DOCKER_IMAGE=moveit/moveit2:foxy-source
-    # - UPSTREAM_WORKSPACE=.rosinstall
+    - UPSTREAM_WORKSPACE=.repos
 
 jobs:
   - env: TEST=clang-format
