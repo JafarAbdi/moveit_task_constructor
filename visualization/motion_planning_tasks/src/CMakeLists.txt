@@ -38,9 +38,6 @@ target_include_directories(${MOVEIT_LIB_NAME}
 	PUBLIC $<TARGET_PROPERTY:motion_planning_tasks_properties,INTERFACE_INCLUDE_DIRECTORIES>
 	PUBLIC $<TARGET_PROPERTY:moveit_task_visualization_tools,INTERFACE_INCLUDE_DIRECTORIES>
 )
-target_include_directories(${MOVEIT_LIB_NAME} SYSTEM
-	PUBLIC ${rviz_OGRE_INCLUDE_DIRS}
-)
 
 install(TARGETS ${MOVEIT_LIB_NAME}
 	EXPORT export_${MOVEIT_LIB_NAME}
