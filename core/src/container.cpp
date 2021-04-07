@@ -39,7 +39,7 @@
 #include <moveit/task_constructor/merge.h>
 #include <moveit/planning_scene/planning_scene.h>
 
-#include <ros/console.h>
+#include <rclcpp/logging.hpp>
 
 #include <memory>
 #include <iostream>
@@ -123,13 +123,13 @@ void ContainerBasePrivate::onNewFailure(const Stage& child, const InterfaceState
 		case CONNECT:
 			if (const Connecting* conn = dynamic_cast<const Connecting*>(&child)) {
 				auto cimpl = conn->pimpl();
-				ROS_DEBUG_STREAM_NAMED("Connecting", "'" << child.name() << "' generated a failure");
+				RCLCPP_DEBUG_STREAM(rclcpp::get_logger("Connecting"), "'" << child.name() << "' generated a failure");
 				if (!cimpl->hasPendingOpposites<Interface::FORWARD>(from)) {
-					ROS_DEBUG_STREAM_NAMED("Connecting", "prune backward branch");
+					RCLCPP_DEBUG_STREAM(rclcpp::get_logger("Connecting"), "prune backward branch");
 					setStatus<Interface::BACKWARD>(from, InterfaceState::Status::FAILED);
 				}
 				if (!cimpl->hasPendingOpposites<Interface::BACKWARD>(to)) {
-					ROS_DEBUG_STREAM_NAMED("Connecting", "prune forward branch");
+					RCLCPP_DEBUG_STREAM(rclcpp::get_logger("Connecting"), "prune forward branch");
 					setStatus<Interface::FORWARD>(to, InterfaceState::Status::FAILED);
 				}
 			}
@@ -902,7 +902,7 @@ void Merger::onNewSolution(const SolutionBase& s) {
 void MergerPrivate::onNewPropagateSolution(const SolutionBase& s) {
 	const SubTrajectory* trajectory = dynamic_cast<const SubTrajectory*>(&s);
 	if (!trajectory || !trajectory->trajectory()) {
-		ROS_ERROR_NAMED("Merger", "Only simple, valid trajectories are supported");
+      RCLCPP_ERROR(rclcpp::get_logger("Merger"), "Only simple, valid trajectories are supported");
 		return;
 	}
 

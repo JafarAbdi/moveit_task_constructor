@@ -69,7 +69,7 @@ inline visualization_msgs::msg::Marker& makeMesh(visualization_msgs::msg::Marker
 
 /// create an arrow with a start and end point
 visualization_msgs::msg::Marker& makeArrow(visualization_msgs::msg::Marker& m, const Eigen::Vector3d& start_point,
-                                      const Eigen::Vector3d& end_point, double diameter, double head_length = 0.0);
+                                           const Eigen::Vector3d& end_point, double diameter, double head_length = 0.0);
 
 /// create an arrow along x-axis
 visualization_msgs::msg::Marker& makeArrow(visualization_msgs::msg::Marker& m, double scale = 1.0,

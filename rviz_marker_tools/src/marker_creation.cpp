@@ -276,7 +276,7 @@ vm::msg::Marker& makeMesh(vm::msg::Marker& m, const std::string& filename, doubl
 }
 
 vm::msg::Marker& makeArrow(vm::msg::Marker& m, const Eigen::Vector3d& start_point, const Eigen::Vector3d& end_point,
-                      double diameter, double head_length) {
+                           double diameter, double head_length) {
 	// scale.y is set according to default proportions in rviz/default_plugin/markers/arrow_marker.cpp#L61
 	// for the default head_length=0, the head length will keep the default proportion defined in arrow_marker.cpp#L106
 	m.scale.x = diameter;

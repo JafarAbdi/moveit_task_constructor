@@ -38,7 +38,7 @@
 
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/robot_state/conversions.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 #include <moveit/task_constructor/stages/move_to.h>
 #include <moveit/task_constructor/cost_terms.h>
@@ -48,6 +48,8 @@ namespace moveit {
 namespace task_constructor {
 namespace stages {
 
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("MoveTo");
+
 MoveTo::MoveTo(const std::string& name, const solvers::PlannerInterfacePtr& planner)
   : PropagatingEitherWay(name), planner_(planner) {
 	setCostTerm(std::make_unique<cost::PathLength>());
@@ -55,27 +57,27 @@ MoveTo::MoveTo(const std::string& name, const solvers::PlannerInterfacePtr& plan
 	auto& p = properties();
 	p.property("timeout").setDefaultValue(1.0);
 	p.declare<std::string>("group", "name of planning group");
-	p.declare<geometry_msgs::PoseStamped>("ik_frame", "frame to be moved towards goal pose");
+	p.declare<geometry_msgs::msg::PoseStamped>("ik_frame", "frame to be moved towards goal pose");
 	p.declare<boost::any>("goal", "goal specification");
 	// register actual types
 	PropertySerializer<std::string>();
-	PropertySerializer<moveit_msgs::RobotState>();
-	PropertySerializer<geometry_msgs::PointStamped>();
-	PropertySerializer<geometry_msgs::PoseStamped>();
+	PropertySerializer<moveit_msgs::msg::RobotState>();
+	PropertySerializer<geometry_msgs::msg::PointStamped>();
+	PropertySerializer<geometry_msgs::msg::PoseStamped>();
 
-	p.declare<moveit_msgs::Constraints>("path_constraints", moveit_msgs::Constraints(),
-	                                    "constraints to maintain during trajectory");
+	p.declare<moveit_msgs::msg::Constraints>("path_constraints", moveit_msgs::msg::Constraints(),
+	                                         "constraints to maintain during trajectory");
 }
 
 void MoveTo::setIKFrame(const Eigen::Isometry3d& pose, const std::string& link) {
-	geometry_msgs::PoseStamped pose_msg;
+	geometry_msgs::msg::PoseStamped pose_msg;
 	pose_msg.header.frame_id = link;
 	pose_msg.pose = tf2::toMsg(pose);
 	setIKFrame(pose_msg);
 }
 
 void MoveTo::setGoal(const std::map<std::string, double>& joints) {
-	moveit_msgs::RobotState robot_state;
+	moveit_msgs::msg::RobotState robot_state;
 	robot_state.joint_state.name.reserve(joints.size());
 	robot_state.joint_state.position.reserve(joints.size());
 
@@ -106,7 +108,7 @@ bool MoveTo::getJointStateGoal(const boost::any& goal, const moveit::core::Joint
 
 	try {
 		// try RobotState
-		const moveit_msgs::RobotState& msg = boost::any_cast<moveit_msgs::RobotState>(goal);
+		const moveit_msgs::msg::RobotState& msg = boost::any_cast<moveit_msgs::msg::RobotState>(goal);
 		if (!msg.is_diff)
 			throw InitStageException(*this, "Expecting a diff state");
 
@@ -144,7 +146,7 @@ bool MoveTo::getJointStateGoal(const boost::any& goal, const moveit::core::Joint
 bool MoveTo::getPoseGoal(const boost::any& goal, const planning_scene::PlanningScenePtr& scene,
                          Eigen::Isometry3d& target_eigen) {
 	try {
-		const geometry_msgs::PoseStamped& target = boost::any_cast<geometry_msgs::PoseStamped>(goal);
+		const geometry_msgs::msg::PoseStamped& target = boost::any_cast<geometry_msgs::msg::PoseStamped>(goal);
 		tf2::fromMsg(target.pose, target_eigen);
 
 		// transform target into global frame
@@ -159,7 +161,7 @@ bool MoveTo::getPoseGoal(const boost::any& goal, const planning_scene::PlanningS
 bool MoveTo::getPointGoal(const boost::any& goal, const moveit::core::LinkModel* link,
                           const planning_scene::PlanningScenePtr& scene, Eigen::Isometry3d& target_eigen) {
 	try {
-		const geometry_msgs::PointStamped& target = boost::any_cast<geometry_msgs::PointStamped>(goal);
+		const geometry_msgs::msg::PointStamped& target = boost::any_cast<geometry_msgs::msg::PointStamped>(goal);
 		Eigen::Vector3d target_point;
 		tf2::fromMsg(target.point, target_point);
 
@@ -179,7 +181,7 @@ bool MoveTo::getPointGoal(const boost::any& goal, const moveit::core::LinkModel*
 bool MoveTo::compute(const InterfaceState& state, planning_scene::PlanningScenePtr& scene, SubTrajectory& solution,
                      Interface::Direction dir) {
 	scene = state.scene()->diff();
-	const robot_model::RobotModelConstPtr& robot_model = scene->getRobotModel();
+	const moveit::core::RobotModelConstPtr& robot_model = scene->getRobotModel();
 	assert(robot_model);
 
 	const auto& props = properties();
@@ -196,7 +198,7 @@ bool MoveTo::compute(const InterfaceState& state, planning_scene::PlanningSceneP
 		return false;
 	}
 
-	const auto& path_constraints = props.get<moveit_msgs::Constraints>("path_constraints");
+	const auto& path_constraints = props.get<moveit_msgs::msg::Constraints>("path_constraints");
 	robot_trajectory::RobotTrajectoryPtr robot_trajectory;
 	bool success = false;
 
@@ -208,7 +210,7 @@ bool MoveTo::compute(const InterfaceState& state, planning_scene::PlanningSceneP
 		Eigen::Isometry3d target_eigen;
 
 		// Cartesian targets require an IK reference frame
-		geometry_msgs::PoseStamped ik_pose_msg;
+		geometry_msgs::msg::PoseStamped ik_pose_msg;
 		const boost::any& value = props.get("ik_frame");
 		if (value.empty()) {  // property undefined
 			// determine IK link from group
@@ -219,7 +221,7 @@ bool MoveTo::compute(const InterfaceState& state, planning_scene::PlanningSceneP
 			ik_pose_msg.header.frame_id = link->getName();
 			ik_pose_msg.pose.orientation.w = 1.0;
 		} else {
-			ik_pose_msg = boost::any_cast<geometry_msgs::PoseStamped>(value);
+			ik_pose_msg = boost::any_cast<geometry_msgs::msg::PoseStamped>(value);
 			if (!(link = robot_model->getLinkModel(ik_pose_msg.header.frame_id))) {
 				solution.markAsFailure("unknown link for ik_frame: " + ik_pose_msg.header.frame_id);
 				return false;
@@ -232,7 +234,7 @@ bool MoveTo::compute(const InterfaceState& state, planning_scene::PlanningSceneP
 		}
 
 		// visualize plan with frame at target pose and frame at link
-		geometry_msgs::PoseStamped target;
+		geometry_msgs::msg::PoseStamped target;
 		target.header.frame_id = scene->getPlanningFrame();
 		target.pose = tf2::toMsg(target_eigen);
 		rviz_marker_tools::appendFrame(solution.markers(), target, 0.1, "ik frame");
