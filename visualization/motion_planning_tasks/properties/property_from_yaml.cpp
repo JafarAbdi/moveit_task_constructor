@@ -160,6 +160,8 @@ rviz_common::properties::Property* Parser::process(const yaml_event_t& event, co
 		default:
 			throw std::runtime_error("Unhandled YAML event");
 	}
+	assert(false);  // should not be reached
+	return nullptr;
 }
 
 // Try to set numeric or arbitrary scalar value from YAML node. Needs to match old's type.
