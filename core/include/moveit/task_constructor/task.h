@@ -64,6 +64,15 @@ MOVEIT_CLASS_FORWARD(Stage);
 MOVEIT_CLASS_FORWARD(ContainerBase);
 MOVEIT_CLASS_FORWARD(Task);
 
+struct PlanResult
+{
+	PlanResult(const moveit_msgs::msg::MoveItErrorCodes code) : code(code) {}
+
+	operator bool() const { return code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS; }
+
+	moveit_msgs::msg::MoveItErrorCodes code;
+};
+
 class TaskPrivate;
 /** A Task is the root of a tree of stages.
  *
@@ -125,7 +134,7 @@ public:
 	void init();
 
 	/// reset, init scene (if not yet done), and init all stages, then start planning
-	bool plan(size_t max_solutions = 0);
+	PlanResult plan(size_t max_solutions = 0);
 	/// interrupt current planning (or execution)
 	void preempt();
 	/// execute solution, return the result

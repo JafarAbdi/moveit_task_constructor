@@ -294,23 +294,34 @@ void Task::compute() {
 	stages()->pimpl()->runCompute();
 }
 
-bool Task::plan(size_t max_solutions) {
+PlanResult Task::plan(size_t max_solutions) {
 	auto impl = pimpl();
 	init();
 
 	impl->preempt_requested_ = false;
 	const double available_time = timeout();
 	const auto start_time = std::chrono::steady_clock::now();
+	auto cur_time = start_time;
 	while (!impl->preempt_requested_ && canCompute() && (max_solutions == 0 || numSolutions() < max_solutions) &&
-	       std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count() < available_time) {
+	       std::chrono::duration<double>(cur_time - start_time).count() < available_time) {
 		compute();
 		for (const auto& cb : impl->task_cbs_)
 			cb(*this);
 		if (impl->introspection_)
 			impl->introspection_->publishTaskState();
+		cur_time = std::chrono::steady_clock::now();
 	}
 	printState();
-	return numSolutions() > 0;
+
+	moveit_msgs::msg::MoveItErrorCodes err;
+	err.val = moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
+	if (impl->preempt_requested_)
+		err.val = moveit_msgs::msg::MoveItErrorCodes::PREEMPTED;
+	else if (std::chrono::duration<double>(cur_time - start_time).count() >= available_time)
+		err.val = moveit_msgs::msg::MoveItErrorCodes::TIMED_OUT;
+	else if (numSolutions() == 0)
+		err.val = moveit_msgs::msg::MoveItErrorCodes::FAILURE;
+	return PlanResult(err);
 }
 
 void Task::preempt() {
