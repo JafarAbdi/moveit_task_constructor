@@ -64,12 +64,15 @@ MOVEIT_CLASS_FORWARD(Stage);
 MOVEIT_CLASS_FORWARD(ContainerBase);
 MOVEIT_CLASS_FORWARD(Task);
 
+// PlanResult is returned by Task::plan(), and stores an error code that can specify what went wrong when planning.
+// To avoid breaking implementations that expect a bool, PlanResult overloads bool
 struct PlanResult
 {
-	PlanResult(const moveit_msgs::msg::MoveItErrorCodes code) : code(code) {}
+	PlanResult(const moveit_msgs::msg::MoveItErrorCodes& code) : code(code) {}
 
 	operator bool() const { return code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS; }
 
+	// Either MoveItErrorCodes::SUCESS, or another MoveIt error code depicting why planning failed.
 	moveit_msgs::msg::MoveItErrorCodes code;
 };
 
