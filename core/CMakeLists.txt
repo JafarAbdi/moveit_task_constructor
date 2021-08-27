@@ -14,7 +14,9 @@ find_package(rviz_marker_tools REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
-set(CMAKE_CXX_STANDARD 17)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
 add_compile_options(-fvisibility-inlines-hidden)
 
