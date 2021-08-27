@@ -43,7 +43,7 @@
 #include <moveit/robot_state/robot_state.h>
 
 #include <Eigen/Geometry>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 #include <chrono>
 #include <functional>
 #include <iterator>

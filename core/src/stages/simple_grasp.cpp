@@ -44,7 +44,7 @@
 #include <moveit/planning_scene/planning_scene.h>
 
 #include <Eigen/Geometry>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 namespace moveit {
 namespace task_constructor {

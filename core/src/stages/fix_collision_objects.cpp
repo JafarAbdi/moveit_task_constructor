@@ -43,7 +43,7 @@
 #include <moveit/task_constructor/cost_terms.h>
 
 #include <rviz_marker_tools/marker_creation.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 #include <Eigen/Geometry>
 #include <rclcpp/logging.hpp>
 

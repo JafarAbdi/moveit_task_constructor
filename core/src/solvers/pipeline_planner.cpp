@@ -43,7 +43,7 @@
 #include <moveit_msgs/msg/motion_plan_request.hpp>
 #include <moveit/kinematic_constraints/utils.h>
 
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 namespace moveit {
 namespace task_constructor {

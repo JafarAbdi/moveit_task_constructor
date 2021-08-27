@@ -43,7 +43,7 @@
 #include <moveit/robot_state/attached_body.h>
 
 #include <Eigen/Geometry>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 namespace moveit {
 namespace task_constructor {

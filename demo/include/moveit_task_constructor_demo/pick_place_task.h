@@ -60,7 +60,7 @@
 
 #include <rclcpp_action/rclcpp_action.hpp>
 
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 #pragma once
 
