@@ -62,7 +62,12 @@ def generate_launch_description():
         package="moveit_task_constructor_demo",
         executable="alternative_path_costs",
         output="screen",
-        parameters=[robot_description, robot_description_semantic, kinematics_yaml, ompl_planning_pipeline_config],
+        parameters=[
+            robot_description,
+            robot_description_semantic,
+            kinematics_yaml,
+            ompl_planning_pipeline_config,
+        ],
     )
 
     return LaunchDescription([cartesian_task])
