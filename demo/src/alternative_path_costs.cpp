@@ -17,7 +17,9 @@ using namespace moveit::task_constructor;
 /* FixedState - Connect - FixedState */
 int main(int argc, char** argv) {
 	rclcpp::init(argc, argv);
-	auto node = rclcpp::Node::make_shared("mtc_tutorial");
+	rclcpp::NodeOptions node_options;
+	node_options.automatically_declare_parameters_from_overrides(true);
+	auto node = rclcpp::Node::make_shared("mtc_tutorial", node_options);
 	std::thread spinning_thread([node] { rclcpp::spin(node); });
 
 	Task t;

@@ -59,7 +59,7 @@ public:
 	struct Specification
 	{
 		moveit::core::RobotModelConstPtr model;
-		std::string ns{ "move_group" };
+		std::string ns{ "ompl" };
 		std::string pipeline{ "ompl" };
 		std::string adapter_param{ "request_adapters" };
 	};

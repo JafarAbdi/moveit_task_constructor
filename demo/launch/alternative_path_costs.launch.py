@@ -58,21 +58,11 @@ def generate_launch_description():
     )
     ompl_planning_pipeline_config["move_group"].update(ompl_planning_yaml)
 
-    pick_place_demo = Node(
+    cartesian_task = Node(
         package="moveit_task_constructor_demo",
-        executable="pick_place_demo",
+        executable="alternative_path_costs",
         output="screen",
-        parameters=[
-            os.path.join(
-                get_package_share_directory("moveit_task_constructor_demo"),
-                "config",
-                "panda_config.yaml",
-            ),
-            robot_description,
-            robot_description_semantic,
-            kinematics_yaml,
-            ompl_planning_pipeline_config,
-        ],
+        parameters=[robot_description, robot_description_semantic, kinematics_yaml, ompl_planning_pipeline_config],
     )
 
-    return LaunchDescription([pick_place_demo])
+    return LaunchDescription([cartesian_task])

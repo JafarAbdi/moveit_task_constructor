@@ -87,7 +87,7 @@ planning_pipeline::PlanningPipelinePtr PipelinePlanner::create(const rclcpp::Nod
 		node->declare_parameter(parameter_name, rclcpp::ParameterType::PARAMETER_STRING);
 	}
 	if (std::string parameter; !node->get_parameter(parameter_name, parameter)) {
-		RCLCPP_WARN(node->get_logger(), "Failed to find '%s/%s'. %s", pipeline_ns.c_str(), PLUGIN_PARAMETER_NAME,
+		RCLCPP_WARN(node->get_logger(), "Failed to find '%s.%s'. %s", pipeline_ns.c_str(), PLUGIN_PARAMETER_NAME,
 		            "Attempting to load pipeline from old parameter structure. Please update your MoveIt config.");
 		pipeline_ns = "move_group";
 	}
