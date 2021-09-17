@@ -69,7 +69,7 @@ ament_target_dependencies(ik_clearance_cost
     rosparam_shortcuts
 )
 
-install(TARGETS cartesian modular pick_place_demo alternative_path_costs ik_clearance_cost
+install(TARGETS cartesian modular pick_place_demo alternative_path_costs ik_clearance_cost pick_place_task
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
