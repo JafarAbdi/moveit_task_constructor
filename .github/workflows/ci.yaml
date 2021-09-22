@@ -72,7 +72,7 @@ jobs:
           name: test-results
           path: ${{ env.BASEDIR }}/target_ws/**/test_results/**/*.xml
       - name: Collect coverage information
-        uses: rhaschke/lcov-action@master
+        uses: JafarAbdi/lcov-action@patch-1
         if: ${{ contains(matrix.env.TARGET_CMAKE_ARGS, '--coverage') }}
         with:
           workdir: ${{ env.BASEDIR }}
