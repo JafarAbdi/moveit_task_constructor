@@ -69,7 +69,11 @@ bool CurrentState::canCompute() const {
 void CurrentState::compute() {
 	scene_ = std::make_shared<planning_scene::PlanningScene>(robot_model_);
 
-	auto node = rclcpp::Node::make_shared("current_state");
+	// Add random ID to prevent warnings about multiple publishers within the same node
+	rclcpp::NodeOptions options;
+	options.arguments(
+	    { "--ros-args", "-r", "__node:=current_state_" + std::to_string(reinterpret_cast<std::size_t>(this)) });
+	auto node = rclcpp::Node::make_shared("_", options);
 	auto client = node->create_client<moveit_msgs::srv::GetPlanningScene>("get_planning_scene");
 
 	auto timeout = std::chrono::duration<double>(this->timeout());
