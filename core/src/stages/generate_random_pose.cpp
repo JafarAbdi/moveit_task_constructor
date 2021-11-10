@@ -41,7 +41,7 @@
 #include <rviz_marker_tools/marker_creation.h>
 
 #include <Eigen/Geometry>
-#include <eigen_conversions/eigen_msg.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 #include <chrono>
 
@@ -49,7 +49,7 @@ namespace {
 // TODO(henningkayser): support user-defined random number engines
 std::random_device rd_;
 std::mt19937 gen_(rd_());
-}
+}  // namespace
 
 namespace moveit {
 namespace task_constructor {
@@ -57,7 +57,7 @@ namespace stages {
 
 GenerateRandomPose::GenerateRandomPose(const std::string& name) : GeneratePose(name) {
 	auto& p = properties();
-	p.declare<geometry_msgs::PoseStamped>("pose", "target pose to pass on in spawned states");
+	p.declare<geometry_msgs::msg::PoseStamped>("pose", "target pose to pass on in spawned states");
 	p.declare<size_t>("max_solutions", 20,
 	                  "limit of the number of spawned solution in case randomized sampling is enabled");
 	p.property("timeout").setDefaultValue(1.0 /* seconds */);
@@ -66,7 +66,7 @@ GenerateRandomPose::GenerateRandomPose(const std::string& name) : GeneratePose(n
 template <>
 GenerateRandomPose::PoseDimensionSampler
 GenerateRandomPose::getPoseDimensionSampler<std::normal_distribution>(double stddev) {
-	return [ stddev, &gen = gen_ ](double mean) {
+	return [stddev, &gen = gen_](double mean) {
 		static std::normal_distribution<double> dist(mean, stddev);
 		return dist(gen);
 	};
@@ -75,7 +75,7 @@ GenerateRandomPose::getPoseDimensionSampler<std::normal_distribution>(double std
 template <>
 GenerateRandomPose::PoseDimensionSampler
 GenerateRandomPose::getPoseDimensionSampler<std::uniform_real_distribution>(double range) {
-	return [ range, &gen = gen_ ](double mean) {
+	return [range, &gen = gen_](double mean) {
 		static std::uniform_real_distribution<double> dist(mean - 0.5 * range, mean + 0.5 * range);
 		return dist(gen);
 	};
@@ -90,15 +90,15 @@ void GenerateRandomPose::compute() {
 		return;
 
 	planning_scene::PlanningScenePtr scene = upstream_solutions_.pop()->end()->scene()->diff();
-	geometry_msgs::PoseStamped target_pose = properties().get<geometry_msgs::PoseStamped>("pose");
+	geometry_msgs::msg::PoseStamped target_pose = properties().get<geometry_msgs::msg::PoseStamped>("pose");
 	if (target_pose.header.frame_id.empty())
 		target_pose.header.frame_id = scene->getPlanningFrame();
 	else if (!scene->knowsFrameTransform(target_pose.header.frame_id)) {
-		ROS_WARN_NAMED("GenerateRandomPose", "Unknown frame: '%s'", target_pose.header.frame_id.c_str());
+		RCLCPP_WARN(rclcpp::get_logger("GenerateRandomPose"), "Unknown frame: '%s'", target_pose.header.frame_id.c_str());
 		return;
 	}
 
-	const auto& spawn_target_pose = [&](const geometry_msgs::PoseStamped& target_pose) {
+	const auto& spawn_target_pose = [&](const geometry_msgs::msg::PoseStamped& target_pose) {
 		InterfaceState state(scene);
 		state.properties().set("target_pose", target_pose);
 
@@ -117,9 +117,9 @@ void GenerateRandomPose::compute() {
 		return;
 
 	// Use target pose as seed pose
-	geometry_msgs::PoseStamped seed_pose = target_pose;
+	const geometry_msgs::msg::PoseStamped seed_pose = target_pose;
 	Eigen::Isometry3d seed, sample;
-	tf::poseMsgToEigen(seed_pose.pose, seed);
+	tf2::fromMsg(seed_pose.pose, seed);
 	double elapsed_time = 0.0;
 	const auto start_time = std::chrono::steady_clock::now();
 	size_t spawned_solutions = 0;
@@ -131,13 +131,13 @@ void GenerateRandomPose::compute() {
 		for (const auto& pose_dim_sampler : pose_dimension_samplers_) {
 			switch (pose_dim_sampler.first) {
 				case X:
-					sample.translate(Eigen::Vector3d(pose_dim_sampler.second(seed_pose.pose.position.x), 0, 0));
+					sample.translation().x() = pose_dim_sampler.second(seed_pose.pose.position.x);
 					break;
 				case Y:
-					sample.translate(Eigen::Vector3d(0, pose_dim_sampler.second(seed_pose.pose.position.y), 0));
+					sample.translation().y() = pose_dim_sampler.second(seed_pose.pose.position.y);
 					break;
 				case Z:
-					sample.translate(Eigen::Vector3d(0, 0, pose_dim_sampler.second(seed_pose.pose.position.z)));
+					sample.translation().z() = pose_dim_sampler.second(seed_pose.pose.position.z);
 					break;
 				case ROLL:
 					sample.rotate(Eigen::AngleAxisd(pose_dim_sampler.second(0.0), Eigen::Vector3d::UnitX()));
@@ -149,7 +149,7 @@ void GenerateRandomPose::compute() {
 					sample.rotate(Eigen::AngleAxisd(pose_dim_sampler.second(0.0), Eigen::Vector3d::UnitZ()));
 			}
 		}
-		tf::poseEigenToMsg(sample, target_pose.pose);
+		target_pose.pose = tf2::toMsg(sample);
 
 		// Spawn sampled pose
 		spawn_target_pose(target_pose);
