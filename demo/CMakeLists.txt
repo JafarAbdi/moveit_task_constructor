@@ -30,7 +30,6 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
 
 add_library(${PROJECT_NAME}_pick_place_task SHARED src/pick_place_task.cpp)
 ament_target_dependencies(${PROJECT_NAME}_pick_place_task ${THIS_PACKAGE_INCLUDE_DEPENDS})
-add_dependencies(${PROJECT_NAME}_pick_place_task ${${PROJECT_NAME}_EXPORTED_TARGETS})
 install(TARGETS ${PROJECT_NAME}_pick_place_task
 	ARCHIVE DESTINATION lib
 	LIBRARY DESTINATION lib
@@ -41,7 +40,6 @@ include_directories(include)
 # declare a demo consisting of a single cpp file
 function(demo name)
 	add_executable(${PROJECT_NAME}_${name} src/${name}.cpp)
-	add_dependencies(${PROJECT_NAME}_${name} ${${PROJECT_NAME}_EXPORTED_TARGETS})
   ament_target_dependencies(${PROJECT_NAME}_${name} ${THIS_PACKAGE_INCLUDE_DEPENDS})
 	set_target_properties(${PROJECT_NAME}_${name} PROPERTIES OUTPUT_NAME ${name} PREFIX "")
 	install(TARGETS ${PROJECT_NAME}_${name}
