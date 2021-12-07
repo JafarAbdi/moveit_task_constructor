@@ -12,6 +12,12 @@
 namespace moveit {
 namespace task_constructor {
 
+inline static const auto SUCCESS_ERROR_CODE = [] {
+	moveit_msgs::msg::MoveItErrorCodes error_code;
+	error_code.val = moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
+	return error_code;
+}();
+
 MOVEIT_STRUCT_FORWARD(PredefinedCosts);
 struct PredefinedCosts : CostTerm
 {

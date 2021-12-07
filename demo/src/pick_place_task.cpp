@@ -491,7 +491,7 @@ bool PickPlaceTask::plan() {
 	int max_solutions = 10;
 	rosparam_shortcuts::get(node_, "max_solutions", max_solutions);
 
-	return task_->plan(max_solutions);
+	return task_->plan(max_solutions).val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
 }
 
 bool PickPlaceTask::execute() {

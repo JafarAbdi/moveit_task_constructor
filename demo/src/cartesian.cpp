@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 
 	auto task = createTask(node);
 	try {
-		if (task.plan())
+		if (task.plan().val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS)
 			task.introspection().publishSolution(*task.solutions().front());
 	} catch (const InitStageException& ex) {
 		std::cerr << "planning failed with exception" << std::endl << ex << task;
