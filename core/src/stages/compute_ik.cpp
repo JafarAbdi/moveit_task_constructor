@@ -237,7 +237,7 @@ void ComputeIK::compute() {
 	properties().performInitFrom(INTERFACE, s.start()->properties());
 	const auto& props = properties();
 
-	const planning_scene::PlanningSceneConstPtr& scene{ s.start()->scene() };
+	const planning_scene::PlanningSceneConstPtr& scene{ s.end()->scene() };
 
 	const bool ignore_collisions = props.get<bool>("ignore_collisions");
 	const auto& robot_model = scene->getRobotModel();
