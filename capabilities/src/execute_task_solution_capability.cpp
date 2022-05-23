@@ -143,16 +143,11 @@ bool ExecuteTaskSolutionCapability::constructMotionPlan(const moveit_task_constr
 	}
 
 	plan.plan_components_.reserve(solution.sub_trajectory.size());
-	for (size_t i = 0; i < solution.sub_trajectory.size(); ++i) {
-		const moveit_task_constructor_msgs::msg::SubTrajectory& sub_traj = solution.sub_trajectory[i];
-
+	auto make_executable_trajectory = [&](const moveit_task_constructor_msgs::msg::SubTrajectory& sub_traj,
+	                                      const std::string& description) {
 		plan.plan_components_.emplace_back();
 		plan_execution::ExecutableTrajectory& exec_traj = plan.plan_components_.back();
-
-		// define individual variable for use in closure below
-		const std::string description = std::to_string(i + 1) + "/" + std::to_string(solution.sub_trajectory.size());
 		exec_traj.description_ = description;
-
 		const moveit::core::JointModelGroup* group = nullptr;
 		{
 			std::vector<std::string> joint_names(sub_traj.trajectory.joint_trajectory.joint_names);
@@ -172,7 +167,7 @@ bool ExecuteTaskSolutionCapability::constructMotionPlan(const moveit_task_constr
 		exec_traj.trajectory_->setRobotTrajectoryMsg(state, sub_traj.trajectory);
 		exec_traj.controller_names_ = sub_traj.execution_info.controller_names;
 
-		/* TODO add action feedback and markers */
+		/* todo add action feedback and markers */
 		exec_traj.effect_on_success_ = [this, scene_diff = sub_traj.scene_diff,
 		                                description](const plan_execution::ExecutableMotionPlan* /*plan*/) mutable {
 			if (!moveit::core::isEmpty(scene_diff)) {
@@ -183,10 +178,19 @@ bool ExecuteTaskSolutionCapability::constructMotionPlan(const moveit_task_constr
 			}
 			return true;
 		};
+		return true;
+	};
 
+	for (size_t i = 0; i < solution.sub_trajectory.size(); ++i) {
+		const moveit_task_constructor_msgs::msg::SubTrajectory& sub_traj = solution.sub_trajectory[i];
+
+		// define individual variable for use in closure below
+		const std::string description = std::to_string(i + 1) + "/" + std::to_string(solution.sub_trajectory.size());
+		if (!make_executable_trajectory(sub_traj, description))
+			return false;
 		if (!moveit::core::isEmpty(sub_traj.scene_diff.robot_state) &&
 		    !moveit::core::robotStateMsgToRobotState(sub_traj.scene_diff.robot_state, state, true)) {
-			RCLCPP_ERROR_STREAM(LOGGER, "invalid intermediate robot state in scene diff of SubTrajectory " << description);
+			RCLCPP_ERROR_STREAM(LOGGER, "invalid intermediate robot state in scene diff of subtrajectory " << description);
 			return false;
 		}
 	}
