@@ -87,6 +87,10 @@ namespace move_group {
 ExecuteTaskSolutionCapability::ExecuteTaskSolutionCapability() : MoveGroupCapability("ExecuteTaskSolution") {}
 
 void ExecuteTaskSolutionCapability::initialize() {
+	{
+		planning_scene_monitor::LockedPlanningSceneRO scene(context_->planning_scene_monitor_);
+		cached_acm_ = scene->getAllowedCollisionMatrix();
+	}
 	// configure the action server
 	as_ = rclcpp_action::create_server<moveit_task_constructor_msgs::action::ExecuteTaskSolution>(
 	    context_->moveit_cpp_->getNode(), "execute_task_solution",
@@ -123,6 +127,11 @@ void ExecuteTaskSolutionCapability::goalCallback(
 		goal_handle->canceled(result);
 	else
 		goal_handle->abort(result);
+
+	{
+		planning_scene_monitor::LockedPlanningSceneRW scene(context_->planning_scene_monitor_);
+		scene->getAllowedCollisionMatrixNonConst() = cached_acm_;
+	}
 }
 
 rclcpp_action::CancelResponse ExecuteTaskSolutionCapability::preemptCallback(

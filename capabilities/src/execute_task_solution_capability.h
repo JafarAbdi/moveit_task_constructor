@@ -75,6 +75,7 @@ private:
 	}
 
 	ActionServerType::SharedPtr as_;
+	collision_detection::AllowedCollisionMatrix cached_acm_;
 };
 
 }  // namespace move_group
