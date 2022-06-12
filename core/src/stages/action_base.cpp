@@ -42,14 +42,13 @@ namespace stages {
 
 constexpr char LOGNAME[] = "action_base";
 
-ActionBase::ActionBase(const std::string& action_name, bool spin_thread, double goal_timeout, double server_timeout)
-  : action_name_(action_name), server_timeout_(server_timeout), goal_timeout_(goal_timeout) {
+ActionBase::ActionBase(const std::string& action_name, bool spin_thread, double server_timeout)
+  : action_name_(action_name), server_timeout_(server_timeout) {
 	clientPtr_ = std::make_unique<actionlib::SimpleActionClient<grasping_msgs::GraspPlanningAction>>(nh_, action_name_,
 	                                                                                                 spin_thread);
 
 	// Negative timeouts are set to zero
 	server_timeout_ = server_timeout_ < std::numeric_limits<double>::epsilon() ? 0.0 : server_timeout_;
-	goal_timeout_ = goal_timeout_ < std::numeric_limits<double>::epsilon() ? 0.0 : goal_timeout_;
 
 	ROS_DEBUG_STREAM_NAMED(LOGNAME, "Waiting for connection to grasp generation action server...");
 	clientPtr_->waitForServer(ros::Duration(server_timeout_));
@@ -57,7 +56,7 @@ ActionBase::ActionBase(const std::string& action_name, bool spin_thread, double 
 }
 
 ActionBase::ActionBase(const std::string& action_name, bool spin_thread)
-  : ActionBase::ActionBase(action_name, spin_thread, 0.0, 0.0) {}
+  : ActionBase::ActionBase(action_name, spin_thread, 0.0) {}
 }  // namespace stages
 }  // namespace task_constructor
 }  // namespace moveit

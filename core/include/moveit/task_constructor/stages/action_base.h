@@ -55,11 +55,10 @@ public:
 	 * @brief Constructor
 	 * @param action_name - action namespace
 	 * @param spin_thread - spins a thread to service this action's subscriptions
-	 * @param goal_timeout - goal to completed time out (0 is considered infinite timeout)
 	 * @param server_timeout - connection to server time out (0 is considered infinite timeout)
 	 * @details Initialize the action client and time out parameters
 	 */
-	ActionBase(const std::string& action_name, bool spin_thread, double goal_timeout, double server_timeout);
+	ActionBase(const std::string& action_name, bool spin_thread, double server_timeout);
 
 	/**
 	 * @brief Constructor
@@ -93,7 +92,7 @@ protected:
 	ros::NodeHandle nh_;
 	std::string action_name_;  // action name space
 	std::unique_ptr<actionlib::SimpleActionClient<grasping_msgs::GraspPlanningAction>> clientPtr_;  // action client
-	double server_timeout_, goal_timeout_;  // connection and goal completed time out
+	double server_timeout_;  // connection and goal completed time out
 };
 }  // namespace stages
 }  // namespace task_constructor

@@ -43,9 +43,9 @@ namespace stages {
 
 constexpr char LOGNAME[] = "grasp_provider";
 
-GraspProvider::GraspProvider(const std::string& action_name, const std::string& stage_name, double goal_timeout,
-                             double server_timeout)
-  : GeneratePose(stage_name), ActionBase(action_name, false, goal_timeout, server_timeout), found_candidates_(false) {
+GraspProvider::GraspProvider(const std::string& action_name, const std::string& stage_name, double server_timeout)
+  : GeneratePose(stage_name), ActionBase(action_name, false, server_timeout), found_candidates_(false) {
+	setTimeout(std::numeric_limits<double>::max());
 	auto& p = properties();
 	p.declare<std::string>("eef", "name of end-effector");
 	p.declare<std::string>("object");
@@ -63,29 +63,6 @@ void GraspProvider::composeGoal() {
 	                     std::bind(&GraspProvider::feedbackCallback, this, std::placeholders::_1));
 
 	ROS_DEBUG_NAMED(LOGNAME, "Goal sent to server to grasp object: %s", goal.object.name.c_str());
-}
-
-bool GraspProvider::monitorGoal() {
-	// monitor timeout
-	const bool monitor_timeout = goal_timeout_ > std::numeric_limits<double>::epsilon();
-	const double timeout_time = ros::Time::now().toSec() + goal_timeout_;
-
-	while (nh_.ok()) {
-		ros::spinOnce();
-
-		// timeout reached
-		if (ros::Time::now().toSec() > timeout_time && monitor_timeout) {
-			clientPtr_->cancelGoal();
-			ROS_ERROR_NAMED(LOGNAME, "Grasp pose generator time out reached");
-			return false;
-		} else if (found_candidates_) {
-			// timeout not reached (or not active) and grasps are found
-			// only way return true
-			break;
-		}
-	}
-
-	return true;
 }
 
 void GraspProvider::activeCallback() {
@@ -157,10 +134,19 @@ void GraspProvider::compute() {
 
 	// compose/send goal
 	composeGoal();
+	ros::AsyncSpinner spinner(2);
+	spinner.start();
 
 	// monitor feedback/results
 	// blocking function until timeout reached or results received
-	if (monitorGoal()) {
+	const auto available_time = timeout();
+	const auto start_time = std::chrono::steady_clock::now();
+	while (nh_.ok() && !found_candidates_) {
+		if (std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count() > available_time) {
+			clientPtr_->cancelGoal();
+			ROS_ERROR_NAMED(LOGNAME, "Grasp pose generator time out reached");
+			return;
+		}
 		// Protect grasp candidate incase feedback is being recieved asynchronously
 		const std::lock_guard<std::mutex> lock(grasp_mutex_);
 		for (unsigned int i = 0; i < grasp_candidates_.size(); i++) {

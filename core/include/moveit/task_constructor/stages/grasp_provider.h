@@ -58,25 +58,16 @@ public:
 	 * @brief Constructor
 	 * @param action_name - action namespace
 	 * @param stage_name - name of stage
-	 * @param goal_timeout - goal to completed time out (0 is considered infinite timeout)
 	 * @param server_timeout - connection to server time out (0 is considered infinite timeout)
 	 * @details Initialize the client and connect to server
 	 */
 	GraspProvider(const std::string& action_name, const std::string& stage_name = "grasp provider",
-	              double goal_timeout = 0.0, double server_timeout = 0.0);
+	              double server_timeout = 0.0);
 
 	/**
 	 * @brief Composes the action goal and sends to server
 	 */
 	void composeGoal();
-
-	/**
-	 * @brief Monitors status of action goal
-	 * @return true if grasp candidates are received within (optional) timeout
-	 * @details This is a blocking call. It will wait until either grasp candidates
-	 *          are received or the timeout has been reached.
-	 */
-	bool monitorGoal();
 
 	void activeCallback() override;
 	void feedbackCallback(const grasping_msgs::GraspPlanningFeedbackConstPtr& feedback) override;
