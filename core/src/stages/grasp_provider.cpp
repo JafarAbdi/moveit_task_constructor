@@ -44,7 +44,7 @@ namespace stages {
 constexpr char LOGNAME[] = "grasp_provider";
 
 GraspProvider::GraspProvider(const std::string& action_name, const std::string& stage_name, double server_timeout)
-  : GeneratePose(stage_name), ActionBase(action_name, false, server_timeout), found_candidates_(false) {
+  : GeneratePose(stage_name), ActionBase(action_name, false, server_timeout), found_all_candidates_(false) {
 	setTimeout(std::numeric_limits<double>::max());
 	auto& p = properties();
 	p.declare<std::string>("eef", "name of end-effector");
@@ -67,15 +67,13 @@ void GraspProvider::composeGoal() {
 
 void GraspProvider::activeCallback() {
 	ROS_DEBUG_STREAM_NAMED(LOGNAME, "Generate grasp goal now active");
-	found_candidates_ = false;
+	found_all_candidates_ = false;
 }
 
 void GraspProvider::feedbackCallback(const grasping_msgs::GraspPlanningFeedbackConstPtr& feedback) {
-	found_candidates_ = true;
-
 	// Protect grasp candidate incase feedback is sent asynchronously
 	const std::lock_guard<std::mutex> lock(grasp_mutex_);
-	grasp_candidates_ = feedback->grasps;
+	grasp_candidates_.push(feedback->grasps);
 }
 
 void GraspProvider::doneCallback(const actionlib::SimpleClientGoalState& state,
@@ -85,6 +83,7 @@ void GraspProvider::doneCallback(const actionlib::SimpleClientGoalState& state,
 	} else {
 		ROS_ERROR_NAMED(LOGNAME, "No grasp candidates found (state): %s", clientPtr_->getState().toString().c_str());
 	}
+	found_all_candidates_ = true;
 }
 
 void GraspProvider::init(const core::RobotModelConstPtr& robot_model) {
@@ -137,29 +136,41 @@ void GraspProvider::compute() {
 	ros::AsyncSpinner spinner(2);
 	spinner.start();
 
+	const auto grasp_candidates_empty = [this] {
+		std::lock_guard<std::mutex> lock(grasp_mutex_);
+		return grasp_candidates_.empty();
+	};
+
 	// monitor feedback/results
 	// blocking function until timeout reached or results received
 	const auto available_time = timeout();
 	const auto start_time = std::chrono::steady_clock::now();
-	while (nh_.ok() && !found_candidates_) {
+	while (nh_.ok() && !(found_all_candidates_ && grasp_candidates_empty())) {
 		if (std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count() > available_time) {
 			clientPtr_->cancelGoal();
 			ROS_ERROR_NAMED(LOGNAME, "Grasp pose generator time out reached");
 			return;
 		}
 		// Protect grasp candidate incase feedback is being recieved asynchronously
-		const std::lock_guard<std::mutex> lock(grasp_mutex_);
-		for (unsigned int i = 0; i < grasp_candidates_.size(); i++) {
+		const auto grasp_candidates = [this] {
+			const std::lock_guard<std::mutex> lock(grasp_mutex_);
+			if (grasp_candidates_.empty())
+				return std::vector<moveit_msgs::Grasp>();
+			auto grasp_candidates = std::move(grasp_candidates_.front());
+			grasp_candidates_.pop();
+			return grasp_candidates;
+		}();
+		for (unsigned int i = 0; i < grasp_candidates.size(); i++) {
 			InterfaceState state(scene);
-			state.properties().set("target_pose", grasp_candidates_.at(i).grasp_pose);
+			state.properties().set("target_pose", grasp_candidates.at(i).grasp_pose);
 			props.exposeTo(state.properties(), { "pregrasp", "grasp" });
 
 			SubTrajectory trajectory;
-			trajectory.setCost(grasp_candidates_.at(i).grasp_quality);
+			trajectory.setCost(grasp_candidates.at(i).grasp_quality);
 			trajectory.setComment(std::to_string(i));
 
 			// add frame at target pose
-			rviz_marker_tools::appendFrame(trajectory.markers(), grasp_candidates_.at(i).grasp_pose, 0.1, "grasp frame");
+			rviz_marker_tools::appendFrame(trajectory.markers(), grasp_candidates.at(i).grasp_pose, 0.1, "grasp frame");
 
 			spawn(std::move(state), std::move(trajectory));
 		}

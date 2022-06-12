@@ -38,6 +38,7 @@
 
 #include <functional>
 #include <mutex>
+#include <queue>
 
 #include <moveit/task_constructor/stages/generate_pose.h>
 #include <moveit/task_constructor/stages/action_base.h>
@@ -90,8 +91,8 @@ protected:
 
 private:
 	std::mutex grasp_mutex_;  // Protects grasp candidates
-	std::atomic_bool found_candidates_;  // Flag indicates the discovery of grasps
-	std::vector<moveit_msgs::Grasp> grasp_candidates_;  // Grasp Candidates
+	std::atomic_bool found_all_candidates_;  // Flag indicates the discovery of grasps
+	std::queue<std::vector<moveit_msgs::Grasp>> grasp_candidates_;  // Grasp Candidates
 };
 }  // namespace stages
 }  // namespace task_constructor
