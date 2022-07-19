@@ -147,7 +147,7 @@ bool ExecuteTaskSolutionCapability::constructMotionPlan(const moveit_task_constr
 	plan.plan_components_.reserve(solution.sub_trajectory.size());
 	auto make_executable_trajectory =
 	    [&](const moveit_task_constructor_msgs::msg::SubTrajectory& sub_traj, const std::string& description,
-	        const boost::function<bool(const plan_execution::ExecutableMotionPlan*)>& on_success_callback) {
+	        const std::function<bool(const plan_execution::ExecutableMotionPlan*)>& on_success_callback) {
 		    plan.plan_components_.emplace_back();
 		    plan_execution::ExecutableTrajectory& exec_traj = plan.plan_components_.back();
 		    exec_traj.description_ = description;
