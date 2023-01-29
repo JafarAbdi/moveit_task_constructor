@@ -2,8 +2,8 @@
 Changelog for package moveit_task_constructor_demo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2023-01-29)
+------------------
 * Update demo's version to match other packages
 * Rely on CXXFLAGS definition from moveit_common package
 * Merge branch 'master' into ros2

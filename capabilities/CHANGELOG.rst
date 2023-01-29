@@ -2,8 +2,8 @@
 Changelog for package moveit_task_constructor_capabilities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2023-01-29)
+------------------
 * Rely on CXXFLAGS definition from moveit_common package
 * Check for moveit::core::MoveItErrorCode::toString
 * Fix syntax error

@@ -2,8 +2,8 @@
 Changelog for package moveit_task_constructor_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2023-01-29)
+------------------
 * Rely on CXXFLAGS definition from moveit_common package
 * Merge branch 'master' into ros2
 * Fix more -Wold-style-cast warnings

@@ -2,8 +2,8 @@
 Changelog for package rviz_marker_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2023-01-29)
+------------------
 * Add missing dependency (`#417 <https://github.com/JafarAbdi/moveit_task_constructor/issues/417>`_)
   Fixup for b54f53e
 * Rely on CXXFLAGS definition from moveit_common package

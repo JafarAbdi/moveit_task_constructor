@@ -2,8 +2,8 @@
 Changelog for package moveit_task_constructor_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2023-01-29)
+------------------
 * Merge https://github.com/ros-planning/moveit/commit/93b46ef21429bc91c8afa1b79479d302764b1e9d
 * GeneratePose: forward registered properties from received solution
 * Silent external clang-tidy warning

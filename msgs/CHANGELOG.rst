@@ -2,8 +2,8 @@
 Changelog for package moveit_task_constructor_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2023-01-29)
+------------------
 * Fix cmake indentation
 * Alphabetize package.xml's and CMakeLists
 * ROS 2 Migration (`#170 <https://github.com/JafarAbdi/moveit_task_constructor/issues/170>`_)
